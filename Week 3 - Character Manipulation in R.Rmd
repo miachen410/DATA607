@@ -1,0 +1,119 @@
+---
+title: 'DATA607 - Assignment 3: Character Manipulation and Date Processing'
+author: "Mia Chen"
+date: "February 17, 2019"
+output: html_document
+---
+
+###Problem 3. Copy the introductory example. The vector name stores the extracted names.
+```{r}
+library(stringr)
+raw.data <-"555-1239Moe Szyslak(636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5553642Dr. Julius Hibbert"
+name <- unlist(str_extract_all(raw.data,"[[:alpha:]., ]{2,}")) #introductory example
+name
+```
+
+####(a) Use the tools of this chapter to rearrange the vector so that all elements conform to the standard first_name last_name.
+
+> First I remove titles and middle intials by identifying any words followed by ".", and replacing them with ""
+
+```{r}
+replace <- str_replace_all(name, "\\w+\\. ", "")
+replace
+```
+
+> Then I replace those having "last name"",""first name" by backreferencing in reverse order: "first name"" ""last name"
+
+```{r}
+first_last_name <- str_replace_all(replace, "(\\w+)\\, (\\w+)", "\\2 \\1")
+first_last_name
+```
+
+####(b) Construct a logical vector indicating whether a character has a title (i.e., Rev. and Dr.).
+
+> A title is TRUE when we detect the presence of any words containing 2 or more characters, followed by ". "
+
+```{r}
+title <- str_detect(name, "\\w{2,}\\. ")
+data.frame(name, title)
+```
+
+####(c) Construct a logical vector indicating whether a character has a second name.
+
+> A second name (initial) is TRUE when we detect the presence of any single uppercase character followed by ". " 
+
+```{r}
+second_name <- str_detect(name, "[A-Z]\\. ")
+data.frame(name, second_name)
+```
+
+###Problem 4. Describe the types of strings that conform to the following regular expressions and construct an example that is matched by the regular expression.
+
+###(a) [0-9]+\\$
+
+> Extracts one or more digits from 0 to 9, followed by "$"
+
+```{r}
+str_extract_all("4324dfa94324$9842w34$", "[0-9]+\\$")
+```
+
+####(b) \\b[a-z]{1,4}\\b
+
+> Extracts any words that contained 1 to 4 lowercase characters
+
+```{r}
+str_extract_all(c("hello", "my name is Mia"), "\\b[a-z]{1,4}\\b")
+```
+
+####(c) .*?\\.txt$
+
+> Extracts any text of any length (including zero length) that contains ".txt" as end of string, i.e. txt file names
+
+```{r}
+str_extract_all(c("lab1.txt", "hw#.txt", ".txt"), ".*?\\.txt$")
+```
+
+####(d) \\d{2}/\\d{2}/\\d{4}
+
+> Extracts digits in 2-2-4 format: xx/xx/xxxx (Date)
+
+```{r}
+str_extract_all(c("2/17/2019", "02/17/2019", "2/17/19"), "\\d{2}/\\d{2}/\\d{4}")
+```
+
+####(e) <(.+?)>.+?</\\1>
+
+> Extracts a set of strings in the format: <text> text </text> (HTML)
+
+```{r}
+str_extract_all(c("<html>","<title>Page Title</title>","</head>"), "<(.+?)>.+?</\\1>")
+```
+
+###Problem 9. The following code hides a secret message. Crack it with R and regular expressions.
+Hint: Some of the characters are more revealing than others! The code snippet is also available in the materials at www.r-datacollection.com.
+
+clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo
+Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO
+d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5
+fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr
+
+```{r}
+code <- ("clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo
+Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO
+d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5
+fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr")
+```
+
+> I found the message inside the code by extracting all the upper letters (followed by "." as a separator for each word)
+
+```{r}
+upper <- str_extract_all(code, "[[:upper:].]+")
+upper
+```
+
+> Make the message look nicer by unlisting, pasting the letters together, and replacing all "." by " "
+
+```{r}
+str_replace_all(paste(unlist(upper), collapse = ""), "[\\.]", " ")
+```
+
