@@ -1,0 +1,97 @@
+---
+title: "Project 1 - Chess Tournament"
+author: "Mia Chen"
+date: "February 24, 2019"
+output: html_document
+---
+
+## **Goal of this project:**
+Given a text file with chess tournament results where the information has some structure, create an R Markdown file that generate a .csv file (that could for example be imported into s SQL database) with the following information for all of the players:
+
+* Player's Name 
+* Player's State 
+* Total Number of Points
+* Player's Pre-Rating 
+* Average Pre Chess Rating of Opponents
+
+###1) Read data
+```{r}
+chess <- readLines("https://raw.githubusercontent.com/miachen410/DATA607/master/tournamentinfo.txt") #read .txt file from github using readLines function in base R
+
+head(chess, 10)
+tail(chess, 10)
+```
+
+###2) Data Wrangling
+As we can see, the data structure is somewhat complex. We will use the "stringr" and "rebus" packages to manipulate the strings.
+```{r message = FALSE}
+library(stringr)
+library(rebus)
+```
+
+Our target information are located in different rows, so we are going to assign data into two separate vectors for convinience.
+```{r}
+part1 <- chess[seq(from = 5, to = length(chess)-1, by = 3)] #ignore first 4 rows, extract data from row 5 to second last row, by every 3 rows
+part1 <- str_split(part1, pattern = "\\|", simplify = TRUE) #split strings, set simplify = TRUE to obtain a matrix format that's easier to work with
+head(part1)
+```
+```{r}
+part2 <- chess[seq(from = 6, to = length(chess), by = 3)] #ignore first 5 rows, extract data from row 6 to last row, by every 3 rows
+part2 <- str_split(part2, pattern = "\\|", simplify = TRUE) #split strings, set simplify = TRUE to obtain a matrix that's easier to work with
+head(part2)
+```
+
+###3) Create Vectors
+```{r}
+name <- str_trim(c(part1[ ,2])) #assign all values from second column in matrix 'part1' to vector 'name', and trim white spaces
+head(name)
+```
+```{r}
+total <- str_trim(c(part1[ ,3])) #assign all values from third column in matrix 'part1' to vector 'total', and trim white spaces
+head(total)
+```
+```{r}
+state <- str_trim(c(part2[ ,1])) #assign all values from first column in matrix 'part2' to vector 'state', and trim white spaces
+head(state)
+```
+```{r}
+rating <- "R:" %R% one_or_more(SPACE) %R% one_or_more(DIGIT) %R% optional("P") #pattern of pre-rating
+pre_rating <- c(str_extract(str_extract(part2[, 2], pattern = rating), pattern = "\\d+")) #extract pre-rating values from matrix 'part 2', digits(one or more) only
+pre_rating <- as.numeric(pre_rating) #change from character to numbers
+head(pre_rating)
+```
+
+###4) Combining Vectors
+Create a data.frame "tournament" to store the vectors "name, total, state, pre_rating" into columns "PlayerName, PlayerState, TotalPoints, PreRating"; Insert an empty column named "AvgOppPreRating" (Average Opponent Pre-Rating)
+```{r}
+tournament <- data.frame("PlayerName" = name, "PlayerState" = state, "TotalPoints" = total, "PreRating" = pre_rating)
+tournament$AvgOppPreRating <- NA #assign NA so there is no value in the column
+head(tournament)
+```
+
+###5) Create a matrix to store opponents' IDs for each player
+```{r}
+opponents <- matrix(str_extract_all(part1[,4:10], "\\d+", simplify = TRUE), ncol = 7) #extract all digits from 4th to 10th columns in matrix 'part1', assign into a matrix with 7 columns- one for each opponent number
+head(opponents)
+```
+
+###6) Calculate Average by a For Loop
+```{r}
+for(i in 1:nrow(tournament)){
+  tournament$AvgOppPreRating[i] <- round(mean(pre_rating[as.numeric(opponents[i,])], na.rm = TRUE))
+}
+#calculate the mean from each row in opponents corresponding to each player, round the mean and assign each mean to the corresponding column 'AvgOppPreRating' in data.frame 'tournament'
+```
+
+###7) Sample Output in Table 
+load "knitr"" package and make a table of tournament using function "kable"
+```{r results = 'asis'}
+library(knitr) 
+kable(head(tournament)) 
+```
+
+###8) Generate a .CSV File
+```{r}
+write.csv(tournament, file = "tournamentinfo.csv")
+```
+
