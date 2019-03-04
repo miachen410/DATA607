@@ -1,0 +1,90 @@
+---
+title: "DATA607 - Assignment 5"
+author: "Mia Chen"
+date: "March 3, 2019"
+output: html_document
+---
+###**Assignment:**
+####Read untidy data from .CSV file into R, and use tidyr and dplyr as needed to tidy and transform data. Perform analysis to compare the arrival delays for the two airlines.
+
+####1) Load tidyr and dplyr packages
+```{r message = FALSE}
+library(tidyr)
+library(dplyr)
+```
+
+####2) Read .CSV file from Github
+```{r}
+airlines <- read.csv("https://raw.githubusercontent.com/miachen410/DATA607/master/airlines.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+```{r}
+airlines
+```
+
+> Take a look at the data: 
+
+> * First two columns have no names; 
+> * There is a blank row; 
+> * Two values are missing in column 1.
+
+####3) Add column names
+```{r}
+names(airlines)[1] <- "Airline"
+names(airlines)[2] <- "Status"
+airlines
+```
+
+####4) Remove the blank row that contains NAs
+```{r}
+#https://stackoverflow.com/questions/6437164/removing-empty-rows-of-a-data-file-in-r
+
+airlines <- airlines[!apply(is.na(airlines) | airlines == "", 1, all),] 
+airlines
+```
+
+####5) Fill in the missing values
+```{r}
+airlines$Airline[2] <- airlines$Airline[1]
+airlines$Airline[4] <- airlines$Airline[3]
+airlines
+```
+
+####6) Gather columns into rows
+```{r}
+airlines_tidy1 <- gather(airlines, "City", "Flights", 3:7) #using gather function in tidyr, I gather cities from column 3 to 7, and transform them into rows
+airlines_tidy1
+```
+
+####7) Spread rows into columns
+```{r}
+airlines_tidy2 <- spread(airlines_tidy1, Status, Flights) #using spread function in tidyr, I spread the rows from status into two columns
+airlines_tidy2
+```
+
+####8) Remove the commas in numeric values and change type to as.numeric
+```{r}
+airlines_tidy2$delayed <- as.numeric(gsub("\\,", "", airlines_tidy2$delayed))
+airlines_tidy2$`on time` <- as.numeric(gsub("\\,", "", airlines_tidy2$`on time`))
+airlines_tidy2
+```
+
+####9) Perform analysis on airlines
+```{r}
+compare_airlines <- airlines_tidy2 %>%
+  group_by(Airline) %>% 
+  summarize(total_delayed = sum(delayed), total_flights = sum(delayed) + sum(`on time`), delay_ratio = sum(delayed) / (sum(delayed) + sum(`on time`))) 
+
+compare_airlines
+```
+
+> From airlines delay comparison on total flights and delay ratio, we see that AM WEST had more flights than ALASKA (about twice as more as ALASKA), yet a smaller delay ratio. It's likely for someone to assume that AM WEST performs better than ALASKA based on this comparison.
+
+####10) Perform analysis on delays in cities
+```{r}
+compare_cities <- airlines_tidy2 %>%
+  group_by(City, Airline) %>% 
+  summarize(delay_ratio = sum(delayed) / (sum(delayed) + sum(`on time`)))
+compare_cities %>% spread(Airline, delay_ratio)
+```
+
+> From cities delay comparison, we see that ALASKA outperforms AM WEST in all five cities since its delay ratio is smaller than AM WEST's in every city. Frankly, it's the opposite of what we have assumed from the previous analysis. 
