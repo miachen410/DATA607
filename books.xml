@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+	<book>
+		<Title>Art History Volume 1</Title>
+		<Author>Marilyn Stokstad, Michael W. Cothren</Author>
+		<Edition>Fifth</Edition>
+		<Year>2013</Year>
+		<ISBN>978-0205873487</ISBN>
+	</book>
+	<book>
+		<Title>Ancient Greece: From Prehistoric to Hellenistic Times</Title>
+		<Author>Thomas R. Martin</Author>
+		<Edition>Second</Edition>
+		<Year>2013</Year>
+		<ISBN>978-0300160055</ISBN>
+	</book>
+	<book>
+		<Title>Ancient Rome: From Romulus to Justinian</Title>		
+		<Author>Thomas R. Martin</Author>		
+		<Edition>First</Edition>
+		<Year>2013</Year>
+		<ISBN>978-0300198317</ISBN>
+	</book>
+</books>
