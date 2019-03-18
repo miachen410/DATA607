@@ -1,0 +1,219 @@
+---
+title: 'DATA 607 - Assignment 7'
+author: "Mia Chen"
+date: "March 17, 2019"
+output: html_document
+---
+
+#Working with HTML, XML and JSON in R
+
+* Pick three of your favorite books on one of your favorite subjects. At least one of the books should have more
+than one author. For each book, include the title, authors, and two or three other attributes that you find
+interesting.
+
+* Take the information that you've selected about these three books, and separately create three files which
+store the book's information in HTML (using an html table), XML, and JSON formats (e.g. "books.html",
+"books.xml", and "books.json"). To help you better understand the different file structures, I'd prefer that you
+create each of these files "by hand" unless you're already very comfortable with the file formats.
+
+* Write R code, using your packages of choice, to load the information from each of the three sources into
+separate R data frames. Are the three data frames identical?
+
+* Your deliverable is the three source files and the R code. If you can, package your assignment solution up into
+an .Rmd file and publish to rpubs.com. [This will also require finding a way to make your three text files
+accessible from the web].
+
+```{r message=FALSE}
+#load packages
+library(XML)
+library(RJSONIO)
+library(dplyr)
+library(DT)
+```
+
+***
+
+#HTML 
+
+
+    <!DOCTYPE html>
+    <html>
+    	<title>Favortie Books in Art History</title>
+    	<body>
+    		<table>
+    			<tr>
+    				<th>Title</th>
+    				<th>Author</th>
+    				<th>Edition</th>
+    				<th>Year</th>
+    				<th>ISBN</th>
+    			</tr>
+    			<tr>
+    				<td>Art History Volume 1</td>
+    				<td>
+    					<div>Marilyn Stokstad</div>
+    					<div>Michael W. Cothren</div>
+    				</td>
+    				<td>Fifth</td>
+    				<td>2013</td>
+    				<td>978-0205873487</td>
+    			</tr>
+    			<tr>
+    				<td>Ancient Greece: From Prehistoric to Hellenistic Times</td>
+    				<td>Thomas R. Martin</td>
+    				<td>Second</td>
+    				<td>2013</td>
+    				<td>978-0300160055</td>
+    			</tr>
+    			<tr>
+    				<td>Ancient Rome: From Romulus to Justinian</td>
+    				<td>Thomas R. Martin</td>
+    				<td>First</td>
+    				<td>2013</td>
+    				<td>978-0300198317</td>
+    			</tr>
+    		</table>
+    
+    	</body>
+    </html>
+
+
+To make the text file accessible from the web, I uploaded the html file to github
+```{r message=FALSE}
+#read url from github
+html_url <- "https://raw.githubusercontent.com/miachen410/DATA607/master/books.html"
+
+#download as local file
+download.file(html_url, destfile = "~/books.html")
+
+#read from local file using htmlParse()
+books_html <- file.path("books.html") %>% htmlParse()
+
+#read html table
+html_table <- readHTMLTable(books_html)
+
+#convert to a data frame with proper header
+html_df <- html_table[[1]] %>% as.data.frame()
+```
+
+```{r}
+#view as table
+datatable(html_df)
+```
+
+***
+
+#XML
+
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <books>
+    	<book>
+    		<Title>Art History Volume 1</Title>
+    		<Author>Marilyn Stokstad, Michael W. Cothren</Author>
+    		<Edition>Fifth</Edition>
+    		<Year>2013</Year>
+    		<ISBN>978-0205873487</ISBN>
+    	</book>
+    	<book>
+    		<Title>Ancient Greece: From Prehistoric to Hellenistic Times</Title>
+    		<Author>Thomas R. Martin</Author>
+    		<Edition>Second</Edition>
+    		<Year>2013</Year>
+    		<ISBN>978-0300160055</ISBN>
+    	</book>
+    	<book>
+    		<Title>Ancient Rome: From Romulus to Justinian</Title>		
+    		<Author>Thomas R. Martin</Author>		
+    		<Edition>First</Edition>
+    		<Year>2013</Year>
+    		<ISBN>978-0300198317</ISBN>
+    	</book>
+    </books>
+
+
+To make the text file accessible from the web, I uploaded the xml file to github
+```{r message=FALSE}
+#read url from github
+xml_url <- "https://raw.githubusercontent.com/miachen410/DATA607/master/books.xml"
+
+#download as local file
+download.file(xml_url, destfile = "~/books.xml")
+
+#read XML file with xmlParse() to obtain the XML tree with R
+books_xml <- file.path("books.xml") %>% xmlParse(file = "books.xml")
+
+#convert to a data frame
+xml_df <- xmlToDataFrame(books_xml)
+```
+
+```{r}
+#view as a table
+datatable(xml_df)
+```
+
+***
+
+#JSON
+
+    {"books" :[
+  	  {
+    		"Title" : "Art History Volume 1",
+    		"Author" : ["Marilyn Stokstad", Michael W. Cothren"],
+    		"Edition" : "Fifth",
+    		"Year" : 2013,
+    		"ISBN" : "978-0205873487"
+    	},
+    	{
+    		"Title" : "Ancient Greece: From Prehistoric to Hellenistic Times",
+    		"Author" : "Thomas R. Martin",
+    		"Edition" : "Second",
+    		"Year" : 2013,
+    		"ISBN" : "978-0300160055"
+    	},
+    	{
+    		"Title" : "Ancient Rome: From Romulus to Justinian",
+    		"Author" : "Thomas R. Martin",
+    		"Edition" : "First",
+    		"Year" : 2013,
+    		"ISBN" : "978-0300198317"
+    	}
+    ]}
+
+    
+To make the text file accessible from the web, I uploaded the json file to github
+```{r message=FALSE}
+#read url from github
+json_url <- "https://raw.githubusercontent.com/miachen410/DATA607/master/books.json"
+
+#download as local file
+download.file(json_url, destfile = "~/books.json")
+
+#read from local file
+json_file <- file.path("books.json")
+
+#check if JSON file is valid
+isValidJSON(json_file)
+```
+
+```{r}
+#read content in JSON format and converts it to R objects
+books_json <- fromJSON(content = json_file)
+
+#check class to see if it's a list object
+class(books_json)
+```
+
+```{r}
+#use lapply() function to turn the lists into data frames
+#join the data frames with a do.call() on rbind()
+json_df <- do.call("rbind", lapply(books_json[[1]], data.frame))
+
+#display the data frame in a data table
+datatable(json_df)
+```
+
+***
+
+> ##Observation:
+> HTML and XML data frames are idential. However, the JSON data frame has an extra row - a separated entry for each of the authors.
