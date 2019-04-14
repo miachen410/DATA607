@@ -1,0 +1,46 @@
+---
+title: "Recommender Systems"
+author: "Mia Chen"
+date: "April 13, 2019"
+output: 
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+In this task, I analyzed the recommender system at Amazon called "item-to-item collaborative filtering", which scales to massive data sets and produces high quality recommendations in real time.This type of filtering matches each of the user's purchased and rated items to similar items, then combines those similar items into a recommendation list for the user.
+
+##1) Scenario Design
+
+###a) Who are the target users?
++ Anyone who likes to shop online
++ Customers who want free and fast shipping
+
+###b) What are their key goals?
++ To be earth's most customer-centric company
++ To build a place where people can come to find and discover anything they might want to buy online
+
+###c) How can you help them accomplish those goals?
++ Their recommendation algorithm is an effective way of creating a personalized shopping experience for each customer which helps Amazon increase average order value and the amount of revenue generated from each customer.
++ They can further this approach by sending highly relevant emails tailored to target customers.
+
+
+##2) Reverse Engineering
++ Amazon's recommender system scales independently of the catalog size or the total number of customers when looking up similar items for the user's purchases and ratings
++ Dependent only on how many titles the user has purchases or rated
++ The algorithm is fast even for extremely large data sets
++ The algorithm performs well even with limited user data
+
+
+##3) Recommendations
+As a regular Amazon shopper, I did not know that I can improve my recommendations by rating purchased items, adding items to Wish List or to exclude certain purchases by selecting "Don't use for recommendations" or selecting "This was a gift." Therefore, I would suggest Amazon to promote these features more explicitly so customers could have better experience and recommendations. 
+
+
+##Sources
+https://datajobs.com/data-science-repo/Recommender-Systems-[Amazon].pdf
+
+http://rejoiner.com/resources/amazon-recommendations-secret-selling-online/
+
+https://www.thebalancesmb.com/amazon-mission-statement-4068548
+
