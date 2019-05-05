@@ -1,0 +1,57 @@
+---
+title: "DATA607 Assignment 2 - R and SQL"
+author: "MiaC"
+date: "February 7, 2019"
+output: html_document
+---
+
+For this assignment, I choose six recent popular movies and asked at least five people that I know to rate each of these movie that they have seen on a scale of 1 to 5. I took the results and stored them in a MySQL database connected to AWS. Here, I'm going to load the information into an R dataframe.
+
+```{r message = FALSE}
+library(RMySQL)
+library(DBI)
+library(DT)
+library(getPass)
+```
+
+Connect to movie database in MySQL through AWS
+```{r}
+con <- dbConnect(RMySQL::MySQL(), 
+  dbname = "movie",
+  host = "mydb.ccjuueb9wecv.us-east-2.rds.amazonaws.com",
+  port = 3306,
+  user = "Admin", 
+  password = getPass())
+```
+
+Retrieve table names in the database
+```{r}
+dbListTables(con)
+```
+
+Retrieve data from the movies table
+```{r}
+movies <- dbReadTable(con, "movies")
+datatable(movies)
+```
+
+Retrieve data from the reviews table
+```{r}
+reviews <- dbReadTable(con, "reviews")
+datatable(reviews)
+```
+
+Query and join MySQL tables
+```{r}
+movie_ratings_query <- dbGetQuery(con, "SELECT m.movie_name, r.rating 
+           FROM movies AS m
+           LEFT JOIN reviews AS r
+           ON m.movie_id = r.movie_id")
+```
+
+Create data frame from the joined query
+```{r}
+movie_ratings_df <- as.data.frame(movie_ratings_query)
+datatable(movie_ratings_df)
+```
+
