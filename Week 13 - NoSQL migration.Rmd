@@ -1,0 +1,76 @@
+---
+title: "DATA607 Assignment 13 - NoSQL Migration"
+author: "Mia Chen"
+date: "April 28, 2019"
+output: html_document
+---
+
+For this assignment, I take the movie relational database from MySQL which was stored at AWS, and migrate it to MongoDB, a NoSQL database.
+
+Some advantages of storing data in relational database such as MySQL are the execution of complex queries, declarative syntax and strong mathematical basis. However, not all data are relational. For those situations, NoSQL can be helpful.
+
+```{r}
+library(RMySQL)
+library(mongolite)
+library(getPass)
+library(DBI)
+library(DT)
+```
+
+Connect to movie database in MySQL through AWS
+```{r}
+con <- dbConnect(RMySQL::MySQL(), 
+  dbname = "movie",
+  host = "mydb.ccjuueb9wecv.us-east-2.rds.amazonaws.com",
+  port = 3306,
+  user = "Admin", 
+  password = getPass())
+```
+
+Retrieve table names in the database
+```{r}
+dbListTables(con)
+```
+
+Retrieve data from the movies table
+```{r}
+movies <- dbReadTable(con, "movies")
+datatable(movies)
+```
+
+Retrieve data from the reviews table
+```{r}
+reviews <- dbReadTable(con, "reviews")
+datatable(reviews)
+```
+
+Query and join MySQL tables
+```{r}
+movie_ratings_query <- dbGetQuery(con, "SELECT m.movie_name, r.rating 
+           FROM movies AS m
+           LEFT JOIN reviews AS r
+           ON m.movie_id = r.movie_id")
+```
+
+Create data frame from the joined query
+```{r}
+movie_ratings_df <- as.data.frame(movie_ratings_query)
+datatable(movie_ratings_df)
+```
+
+Connect to MongoDB database
+```{r}
+# Collection movie_ratings was created in MongoDB in advance
+collection <- mongo(collection = "movie_ratings")
+```
+
+Insert movie_ratings dataframe into the MongoDB database collection
+```{r}
+collection$insert(movie_ratings_df)
+```
+
+Check the stored data in MongoDB database
+```{r}
+datatable(collection$find())
+```
+
